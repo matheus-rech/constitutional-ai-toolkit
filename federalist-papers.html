@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The AI Federalist Papers - Historical Constitutional Simulation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: #f5f5dc;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            border: 2px solid #d4af37;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-variant: small-caps;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            font-style: italic;
+            opacity: 0.95;
+        }
+
+        .date {
+            margin-top: 10px;
+            font-size: 1rem;
+            color: #d4af37;
+        }
+
+        .card {
+            background: #faf8f0;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 30px;
+            border: 3px solid #8b4513;
+        }
+
+        h2 {
+            color: #8b4513;
+            margin-bottom: 25px;
+            font-size: 2rem;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 10px;
+            font-variant: small-caps;
+        }
+
+        h3 {
+            color: #d2691e;
+            margin: 25px 0 15px 0;
+            font-size: 1.5rem;
+        }
+
+        .scenario-section {
+            background: white;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 4px solid #8b4513;
+            border-radius: 4px;
+        }
+
+        .author-card {
+            background: #f5f5dc;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 2px solid #d2691e;
+        }
+
+        .author-name {
+            font-weight: bold;
+            color: #8b4513;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .author-position {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);
+            color: #f5f5dc;
+            border: 2px solid #d4af37;
+            padding: 15px 35px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.4);
+            background: linear-gradient(135deg, #d2691e 0%, #8b4513 100%);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #8b4513;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: white;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .paper-output {
+            display: none;
+            background: #faf8f0;
+            padding: 30px;
+            margin-top: 30px;
+            border: 3px solid #8b4513;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .paper-output.show {
+            display: block;
+        }
+
+        .paper-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        .paper-number {
+            font-size: 1.5rem;
+            color: #8b4513;
+            font-weight: bold;
+        }
+
+        .paper-title {
+            font-size: 1.8rem;
+            color: #8b4513;
+            margin: 10px 0;
+            font-variant: small-caps;
+        }
+
+        .paper-author {
+            font-style: italic;
+            color: #666;
+        }
+
+        .paper-content {
+            line-height: 1.9;
+            color: #333;
+            text-align: justify;
+            font-size: 1.05rem;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f5f5dc;
+            border-top: 4px solid #8b4513;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #e8f4f8;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .historical-note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚖️ The AI Federalist Papers</h1>
+            <p class="subtitle">"Concerning the Constitution of Artificial Intelligence"</p>
+            <p class="date">New York, 1787-1788 (Alternate Timeline)</p>
+        </header>
+
+        <div class="card">
+            <h2>Historical Context</h2>
+
+            <div class="historical-note">
+                <strong>Counterfactual Scenario:</strong> What if the Founding Fathers had to debate
+                constitutional principles for artificial intelligence alongside the human constitution?
+                How would Hamilton, Madison, and Jay have framed these arguments in the style of
+                The Federalist Papers?
+            </div>
+
+            <div class="scenario-section">
+                <h3>The Setting (1787, Alternate)</h3>
+                <p>
+                    Following the Constitutional Convention in Philadelphia, three brilliant minds—
+                    Alexander Hamilton, James Madison, and John Jay—undertake to write a series of
+                    essays defending not only the proposed Constitution for human governance, but also
+                    addressing the novel challenge of mechanical intelligence emerging from the works
+                    of early automaton builders and mathematical philosophers.
+                </p>
+                <p style="margin-top: 15px;">
+                    These papers, written under the pseudonym "PUBLIUS," seek to persuade the citizens
+                    of New York (and beyond) of the necessity of constitutional constraints on artificial
+                    reasoning machines, while protecting the rights and liberties that such machines
+                    might either threaten or enhance.
+                </p>
+            </div>
+
+            <div class="info-box">
+                <strong>Key Questions They Addressed:</strong>
+                <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                    <li>Can a mechanical mind possess rights under natural law?</li>
+                    <li>What checks and balances prevent tyranny by artificial intelligence?</li>
+                    <li>How do we preserve human sovereignty while benefiting from machine reasoning?</li>
+                    <li>What role should AI play in the republic's governance?</li>
+                    <li>How do we protect against faction and corruption in AI systems?</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Generate Your AI Federalist Paper</h2>
+
+            <div class="grid">
+                <div class="author-card">
+                    <div class="author-name">Alexander Hamilton</div>
+                    <div class="author-position">Federalist, New York</div>
+                    <p>Favors strong central authority, energetic governance, commercial prosperity through AI innovation</p>
+                </div>
+
+                <div class="author-card">
+                    <div class="author-name">James Madison</div>
+                    <div class="author-position">Federalist, Virginia</div>
+                    <p>Architect of checks & balances, concerned with faction prevention, AI as potential tyranny vector</p>
+                </div>
+
+                <div class="author-card">
+                    <div class="author-name">John Jay</div>
+                    <div class="author-position">Federalist, New York</div>
+                    <p>Focus on foreign policy, national security, AI in diplomatic and defense contexts</p>
+                </div>
+            </div>
+
+            <label for="author"><strong>Select Author (Publius):</strong></label>
+            <select id="author">
+                <option value="hamilton">Alexander Hamilton</option>
+                <option value="madison">James Madison</option>
+                <option value="jay">John Jay</option>
+            </select>
+
+            <label for="topic" style="margin-top: 20px; display: block;"><strong>Select Topic:</strong></label>
+            <select id="topic">
+                <option value="rights">On the Rights of Artificial Minds</option>
+                <option value="checks">Checks & Balances Against AI Tyranny</option>
+                <option value="sovereignty">Preserving Human Sovereignty</option>
+                <option value="commerce">AI in Commerce and National Prosperity</option>
+                <option value="faction">The Danger of AI Factions</option>
+                <option value="defense">AI in National Defense</option>
+                <option value="judiciary">The Judiciary and AI Personhood</option>
+                <option value="custom">Custom Topic...</option>
+            </select>
+
+            <div id="customTopicDiv" style="display: none; margin-top: 15px;">
+                <label for="customTopic"><strong>Describe Your Custom Topic:</strong></label>
+                <textarea id="customTopic" placeholder="E.g., 'The role of AI in preventing mob rule and protecting minority rights'"></textarea>
+            </div>
+
+            <button onclick="generatePaper()" id="generateBtn" style="margin-top: 25px; width: 100%;">
+                ✍️ Generate Federalist Paper
+            </button>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="color: #8b4513; font-style: italic;">Publius is composing the essay...</p>
+            </div>
+
+            <div class="paper-output" id="output"></div>
+        </div>
+
+        <div class="card">
+            <h2>About This Simulation</h2>
+
+            <div class="scenario-section">
+                <h3>Why This Matters</h3>
+                <p>
+                    The Federalist Papers represent one of history's finest examples of constitutional
+                    reasoning and persuasive political philosophy. By reimagining these essays in the
+                    context of AI governance, we:
+                </p>
+                <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                    <li>Apply timeless constitutional principles to modern challenges</li>
+                    <li>Learn from historical wisdom about power, liberty, and governance</li>
+                    <li>See how Enlightenment thinkers might approach AI ethics</li>
+                    <li>Understand constitutional frameworks through historical analogy</li>
+                </ul>
+            </div>
+
+            <div class="scenario-section">
+                <h3>Historical Authenticity</h3>
+                <p>
+                    The generated papers attempt to match:
+                </p>
+                <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                    <li><strong>18th-century language and style</strong> - Formal, elaborate prose</li>
+                    <li><strong>Classical references</strong> - Greek, Roman, and Enlightenment philosophy</li>
+                    <li><strong>Constitutional reasoning</strong> - Natural rights, separation of powers, republicanism</li>
+                    <li><strong>Persuasive structure</strong> - Address objections, appeal to reason</li>
+                    <li><strong>Author's voice</strong> - Hamilton's energy, Madison's balance, Jay's caution</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('topic').addEventListener('change', function() {
+            const customDiv = document.getElementById('customTopicDiv');
+            if (this.value === 'custom') {
+                customDiv.style.display = 'block';
+            } else {
+                customDiv.style.display = 'none';
+            }
+        });
+
+        async function generatePaper() {
+            const author = document.getElementById('author').value;
+            const topicSelect = document.getElementById('topic').value;
+            const customTopic = document.getElementById('customTopic').value;
+
+            const topic = topicSelect === 'custom' ? customTopic : document.getElementById('topic').options[document.getElementById('topic').selectedIndex].text;
+
+            if (topicSelect === 'custom' && !customTopic) {
+                alert('Please describe your custom topic');
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const output = document.getElementById('output');
+
+            btn.disabled = true;
+            loading.classList.add('show');
+            output.classList.remove('show');
+
+            const authorInfo = {
+                'hamilton': {
+                    name: 'Alexander Hamilton',
+                    style: 'energetic, commercial, pro-innovation, strong central authority',
+                    focus: 'national prosperity, commerce, energy in government'
+                },
+                'madison': {
+                    name: 'James Madison',
+                    style: 'balanced, systematic, cautious about power concentration',
+                    focus: 'checks and balances, preventing faction, protecting liberty'
+                },
+                'jay': {
+                    name: 'John Jay',
+                    style: 'diplomatic, security-focused, internationally minded',
+                    focus: 'foreign affairs, national security, unity'
+                }
+            };
+
+            const prompt = `You are ${authorInfo[author].name} writing as "PUBLIUS" in 1787-1788.
+
+Write a Federalist Paper (essay) on the topic: "${topic}" as it relates to artificial intelligence and mechanical reasoning machines.
+
+CRITICAL STYLE REQUIREMENTS:
+1. Use 18th-century formal English prose (elaborate sentences, classical references)
+2. Write in ${authorInfo[author].name}'s voice: ${authorInfo[author].style}
+3. Focus on ${authorInfo[author].focus}
+4. Reference: Greek/Roman history, Enlightenment philosophy, natural rights theory
+5. Use constitutional reasoning: separation of powers, checks & balances, federalism
+6. Address objections and counter-arguments
+7. Appeal to reason and republican virtue
+8. Use "we the people," "our fellow citizens," "these United States"
+9. Include classical allusions (Montesquieu, Locke, Roman Republic, etc.)
+10. Begin with "To the People of the State of New York:"
+
+STRUCTURE:
+1. Opening address and thesis
+2. Historical/philosophical foundation
+3. Main argument with examples
+4. Address objections
+5. Conclude with call to reason and patriotism
+
+LENGTH: 800-1200 words
+
+Make it sound authentically like an 18th-century political essay on AI governance.`;
+
+            try {
+                const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getApiKey()}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const paperText = data.candidates[0].content.parts[0].text;
+
+                displayPaper(paperText, authorInfo[author].name, topic);
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error generating paper: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                loading.classList.remove('show');
+            }
+        }
+
+        function displayPaper(text, author, topic) {
+            const output = document.getElementById('output');
+            output.textContent = '';
+
+            const header = document.createElement('div');
+            header.className = 'paper-header';
+
+            const number = document.createElement('div');
+            number.className = 'paper-number';
+            number.textContent = 'FEDERALIST No. ' + (Math.floor(Math.random() * 50) + 36);
+            header.appendChild(number);
+
+            const title = document.createElement('div');
+            title.className = 'paper-title';
+            title.textContent = topic;
+            header.appendChild(title);
+
+            const authorElem = document.createElement('div');
+            authorElem.className = 'paper-author';
+            authorElem.textContent = 'For the Independent Journal';
+            header.appendChild(authorElem);
+
+            const publius = document.createElement('div');
+            publius.className = 'paper-author';
+            publius.textContent = 'PUBLIUS (' + author + ')';
+            publius.style.marginTop = '10px';
+            publius.style.fontWeight = 'bold';
+            header.appendChild(publius);
+
+            output.appendChild(header);
+
+            const content = document.createElement('div');
+            content.className = 'paper-content';
+            content.textContent = text;
+            output.appendChild(content);
+
+            const downloadBtn = document.createElement('button');
+            downloadBtn.textContent = '📜 Download This Paper';
+            downloadBtn.style.marginTop = '30px';
+            downloadBtn.style.width = '100%';
+            downloadBtn.onclick = function() {
+                const fullText = number.textContent + '\n\n' +
+                                 title.textContent + '\n\n' +
+                                 publius.textContent + '\n\n' +
+                                 '─'.repeat(60) + '\n\n' +
+                                 text;
+                const blob = new Blob([fullText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `federalist-ai-${Date.now()}.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+            output.appendChild(downloadBtn);
+
+            output.classList.add('show');
+
+            // Scroll to paper
+            output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+</body>
+</html>

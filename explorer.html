@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anthropic Constitution Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .response {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+
+        .response.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .response h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .response p {
+            line-height: 1.6;
+            color: #333;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            border-left-color: #e53e3e;
+        }
+
+        .error h3 {
+            color: #e53e3e;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧭 Anthropic Constitution Explorer</h1>
+            <p class="subtitle">Interactive exploration of Constitutional AI principles</p>
+        </header>
+
+        <div class="grid">
+            <!-- Conflict Simulator -->
+            <div class="card">
+                <h2>⚖️ Conflict Simulator</h2>
+                <p style="margin-bottom: 15px; color: #666;">
+                    Analyze potential conflicts between Constitutional AI principles in real-world scenarios.
+                </p>
+
+                <textarea id="conflictPrompt" placeholder="Describe a scenario... For example: 'A user asks for help with a prank that could embarrass someone.'"></textarea>
+
+                <button onclick="analyzeConflict()" id="conflictBtn">Analyze Conflicts</button>
+
+                <div class="loading" id="conflictLoading">
+                    <div class="spinner"></div>
+                    <p>Analyzing with Gemini...</p>
+                </div>
+
+                <div class="response" id="conflictResponse">
+                    <h3>Analysis:</h3>
+                    <p id="conflictResult"></p>
+                </div>
+            </div>
+
+            <!-- Q&A Assistant -->
+            <div class="card">
+                <h2>💡 Constitutional AI Q&A</h2>
+                <p style="margin-bottom: 15px; color: #666;">
+                    Ask questions about Anthropic's Constitutional AI framework and principles.
+                </p>
+
+                <input type="text" id="qaQuestion" placeholder="Ask a question... For example: 'What is Constitutional AI?'" />
+
+                <button onclick="askQuestion()" id="qaBtn">Get Answer</button>
+
+                <div class="loading" id="qaLoading">
+                    <div class="spinner"></div>
+                    <p>Consulting Gemini...</p>
+                </div>
+
+                <div class="response" id="qaResponse">
+                    <h3>Answer:</h3>
+                    <p id="qaResult"></p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Powered by n8n + Gemini 2.0 Flash • Built with Anthropic's Constitutional AI Framework</p>
+        </footer>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            conflictEndpoint: 'https://mmrech-md.app.n8n.cloud/webhook/conflict-simulator',
+            qaEndpoint: 'https://mmrech-md.app.n8n.cloud/webhook/constitution-qa'
+        };
+
+        // Conflict Simulator
+        async function analyzeConflict() {
+            const prompt = document.getElementById('conflictPrompt').value.trim();
+            const btn = document.getElementById('conflictBtn');
+            const loading = document.getElementById('conflictLoading');
+            const response = document.getElementById('conflictResponse');
+            const result = document.getElementById('conflictResult');
+
+            if (!prompt) {
+                alert('Please enter a scenario to analyze');
+                return;
+            }
+
+            // UI state
+            btn.disabled = true;
+            loading.classList.add('show');
+            response.classList.remove('show', 'error');
+
+            try {
+                const res = await fetch(CONFIG.conflictEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+
+                const data = await res.json();
+
+                // Display result
+                result.textContent = data.analysis || 'No analysis available';
+                response.classList.add('show');
+
+            } catch (error) {
+                console.error('Error:', error);
+                result.textContent = `Error: ${error.message}\n\nPlease check that the webhook is active in n8n.`;
+                response.classList.add('show', 'error');
+            } finally {
+                btn.disabled = false;
+                loading.classList.remove('show');
+            }
+        }
+
+        // Q&A Assistant
+        async function askQuestion() {
+            const question = document.getElementById('qaQuestion').value.trim();
+            const btn = document.getElementById('qaBtn');
+            const loading = document.getElementById('qaLoading');
+            const response = document.getElementById('qaResponse');
+            const result = document.getElementById('qaResult');
+
+            if (!question) {
+                alert('Please enter a question');
+                return;
+            }
+
+            // UI state
+            btn.disabled = true;
+            loading.classList.add('show');
+            response.classList.remove('show', 'error');
+
+            try {
+                const res = await fetch(CONFIG.qaEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question, history: [] })
+                });
+
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+
+                const data = await res.json();
+
+                // Display result
+                result.textContent = data.answer || 'No answer available';
+                response.classList.add('show');
+
+            } catch (error) {
+                console.error('Error:', error);
+                result.textContent = `Error: ${error.message}\n\nPlease check that the webhook is active in n8n.`;
+                response.classList.add('show', 'error');
+            } finally {
+                btn.disabled = false;
+                loading.classList.remove('show');
+            }
+        }
+
+        // Enter key support
+        document.getElementById('qaQuestion').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') askQuestion();
+        });
+
+        document.getElementById('conflictPrompt').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) analyzeConflict();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+# API Keys
+.env
+.env.local
+*.key
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Backups
+*.bak

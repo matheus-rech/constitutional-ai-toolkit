@@ -1,0 +1,223 @@
+{
+  "name": "Constitutional AI Toolkit Deployer",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "deploy-toolkit",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Deploy Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "repo_owner",
+              "name": "repo_owner",
+              "value": "={{ $json.body.repository.split('/')[3] }}",
+              "type": "string"
+            },
+            {
+              "id": "repo_name",
+              "name": "repo_name",
+              "value": "={{ $json.body.repository.split('/')[4] }}",
+              "type": "string"
+            },
+            {
+              "id": "github_token",
+              "name": "github_token",
+              "value": "={{ $json.body.github_token }}",
+              "type": "string"
+            },
+            {
+              "id": "platform",
+              "name": "platform",
+              "value": "={{ $json.body.platform || 'github' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "parse-input",
+      "name": "Parse Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "github-check",
+              "leftValue": "={{ $json.platform }}",
+              "rightValue": "github",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "platform-switch",
+      "name": "Platform Switch",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/{{ $json.repo_owner }}/{{ $json.repo_name }}/contents/index.html",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.github_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "Deploy: Update index.html"
+            },
+            {
+              "name": "content",
+              "value": "={{ $json.index_html_base64 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "deploy-github-index",
+      "name": "Deploy to GitHub - Index",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const files = [\n  { name: 'index.html', content: items[0].json.files.index },\n  { name: 'api-key-manager.html', content: items[0].json.files.apiKeyManager },\n  { name: 'explorer.html', content: items[0].json.files.explorer },\n  { name: 'simulation-explorer.html', content: items[0].json.files.simulationExplorer },\n  { name: 'scenario-generator.html', content: items[0].json.files.scenarioGenerator },\n  { name: 'war-games.html', content: items[0].json.files.warGames },\n  { name: 'federalist-papers.html', content: items[0].json.files.federalistPapers },\n  { name: 'README.md', content: items[0].json.files.readme }\n];\n\nconst results = [];\n\nfor (const file of files) {\n  results.push({\n    json: {\n      filename: file.name,\n      content_base64: Buffer.from(file.content).toString('base64'),\n      repo_owner: items[0].json.repo_owner,\n      repo_name: items[0].json.repo_name,\n      github_token: items[0].json.github_token\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "prepare-files",
+      "name": "Prepare All Files",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/{{ $json.repo_owner }}/{{ $json.repo_name }}/contents/{{ $json.filename }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.github_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"message\": \"Deploy: \" + $json.filename,\n  \"content\": $json.content_base64\n} }}",
+        "options": {}
+      },
+      "id": "deploy-github-files",
+      "name": "Deploy Each File to GitHub",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"message\": \"Constitutional AI Toolkit deployed successfully!\",\n  \"platform\": $json.platform,\n  \"repository\": $json.repo_owner + '/' + $json.repo_name,\n  \"url\": \"https://\" + $json.repo_owner + \".github.io/\" + $json.repo_name,\n  \"files_deployed\": 8\n} }}",
+        "options": {}
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.vercel.com/v13/deployments",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.vercel_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"name\": $json.repo_name,\n  \"files\": $json.files_array,\n  \"projectSettings\": {\n    \"framework\": null\n  }\n} }}",
+        "options": {}
+      },
+      "id": "deploy-vercel",
+      "name": "Deploy to Vercel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [850, 600]
+    }
+  ],
+  "connections": {
+    "Deploy Request": {
+      "main": [[{ "node": "Parse Input", "type": "main", "index": 0 }]]
+    },
+    "Parse Input": {
+      "main": [[{ "node": "Platform Switch", "type": "main", "index": 0 }]]
+    },
+    "Platform Switch": {
+      "main": [
+        [{ "node": "Prepare All Files", "type": "main", "index": 0 }],
+        [{ "node": "Deploy to Vercel", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prepare All Files": {
+      "main": [[{ "node": "Deploy Each File to GitHub", "type": "main", "index": 0 }]]
+    },
+    "Deploy Each File to GitHub": {
+      "main": [[{ "node": "Respond Success", "type": "main", "index": 0 }]]
+    },
+    "Deploy to Vercel": {
+      "main": [[{ "node": "Respond Success", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {}
+}

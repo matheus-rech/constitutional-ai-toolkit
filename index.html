@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constitutional AI Toolkit</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .api-status {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .api-status.configured {
+            background: rgba(76, 175, 80, 0.3);
+        }
+
+        .api-status.not-configured {
+            background: rgba(255, 152, 0, 0.3);
+        }
+
+        .configure-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .configure-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .tool-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .tool-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .tool-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .tool-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .tool-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: #f0f0f0;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            color: #555;
+        }
+
+        .tag.beginner { background: #e3f2fd; color: #1976d2; }
+        .tag.intermediate { background: #fff3e0; color: #f57c00; }
+        .tag.advanced { background: #fce4ec; color: #c2185b; }
+
+        .docs-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .docs-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .docs-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .doc-link {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .doc-link:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚖️ Constitutional AI Toolkit</h1>
+            <p class="subtitle">Explore, Simulate, and Analyze Constitutional AI Systems</p>
+        </header>
+
+        <div id="apiStatus" class="api-status not-configured">
+            <div>
+                <strong>⚠️ Gemini API Key Not Configured</strong>
+                <p style="margin-top: 5px; font-size: 0.9em;">Configure your API key to enable all features</p>
+            </div>
+            <button class="configure-btn" onclick="window.location.href='api-key-manager.html'">
+                Configure API Key
+            </button>
+        </div>
+
+        <div class="tools-grid">
+            <a href="explorer.html" class="tool-card">
+                <div class="tool-icon">🔍</div>
+                <div class="tool-title">Constitution Explorer</div>
+                <div class="tool-description">
+                    Interactive conflict analysis and Q&A assistant powered by Anthropic's Constitutional AI principles.
+                </div>
+                <div class="tool-tags">
+                    <span class="tag beginner">Beginner Friendly</span>
+                    <span class="tag">Interactive</span>
+                </div>
+            </a>
+
+            <a href="simulation-explorer.html" class="tool-card">
+                <div class="tool-icon">🧪</div>
+                <div class="tool-title">Simulation Explorer</div>
+                <div class="tool-description">
+                    Learn about simulation methodologies with live demos of Agent-Based Models and Monte Carlo simulations.
+                </div>
+                <div class="tool-tags">
+                    <span class="tag intermediate">Intermediate</span>
+                    <span class="tag">Educational</span>
+                </div>
+            </a>
+
+            <a href="scenario-generator.html" class="tool-card">
+                <div class="tool-icon">🎬</div>
+                <div class="tool-title">Scenario Generator</div>
+                <div class="tool-description">
+                    Create comprehensive simulation scenarios using AI. Generate stakeholder analysis, parameters, and metrics.
+                </div>
+                <div class="tool-tags">
+                    <span class="tag intermediate">Intermediate</span>
+                    <span class="tag">AI-Powered</span>
+                </div>
+            </a>
+
+            <a href="war-games.html" class="tool-card">
+                <div class="tool-icon">⚔️</div>
+                <div class="tool-title">War Games Simulator</div>
+                <div class="tool-description">
+                    Test constitutional principles under strategic conflict scenarios. Cyber warfare, AI arms race, and more.
+                </div>
+                <div class="tool-tags">
+                    <span class="tag advanced">Advanced</span>
+                    <span class="tag">Strategic</span>
+                </div>
+            </a>
+
+            <a href="federalist-papers.html" class="tool-card">
+                <div class="tool-icon">📜</div>
+                <div class="tool-title">AI Federalist Papers</div>
+                <div class="tool-description">
+                    Generate 18th-century style constitutional essays by Hamilton, Madison, or Jay on modern AI governance.
+                </div>
+                <div class="tool-tags">
+                    <span class="tag intermediate">Intermediate</span>
+                    <span class="tag">Historical</span>
+                </div>
+            </a>
+
+            <a href="api-key-manager.html" class="tool-card">
+                <div class="tool-icon">🔐</div>
+                <div class="tool-title">API Key Manager</div>
+                <div class="tool-description">
+                    Securely configure and manage your Gemini API key. All keys are stored locally in your browser.
+                </div>
+                <div class="tool-tags">
+                    <span class="tag beginner">Setup</span>
+                    <span class="tag">Security</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="docs-section">
+            <h2>📚 Documentation & Guides</h2>
+            <div class="docs-links">
+                <a href="README.md" class="doc-link">
+                    📖 README - Getting Started
+                </a>
+                <a href="constitutional-value-discovery-summary.md" class="doc-link">
+                    🔬 Value Discovery Guide
+                </a>
+                <a href="how-to-create-simulation-scenarios.md" class="doc-link">
+                    🎯 Scenario Creation Guide
+                </a>
+                <a href="war-games-and-historical-simulations-guide.md" class="doc-link">
+                    ⚔️ War Games Guide
+                </a>
+            </div>
+        </div>
+
+        <footer>
+            <p>Constitutional AI Toolkit v1.0</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                Powered by Google Gemini 2.0 Flash • Open Source • Client-Side Only
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Check if API key is configured
+        function checkApiKey() {
+            const apiKey = localStorage.getItem('gemini_api_key');
+            const statusDiv = document.getElementById('apiStatus');
+
+            if (apiKey) {
+                statusDiv.className = 'api-status configured';
+                statusDiv.textContent = '';
+
+                const contentDiv = document.createElement('div');
+                const strongEl = document.createElement('strong');
+                strongEl.textContent = '✅ Gemini API Key Configured';
+                const pEl = document.createElement('p');
+                pEl.style.marginTop = '5px';
+                pEl.style.fontSize = '0.9em';
+                pEl.textContent = 'All features are enabled';
+                contentDiv.appendChild(strongEl);
+                contentDiv.appendChild(pEl);
+
+                const btnEl = document.createElement('button');
+                btnEl.className = 'configure-btn';
+                btnEl.textContent = 'Manage API Key';
+                btnEl.onclick = () => window.location.href = 'api-key-manager.html';
+
+                statusDiv.appendChild(contentDiv);
+                statusDiv.appendChild(btnEl);
+            }
+        }
+
+        checkApiKey();
+    </script>
+</body>
+</html>

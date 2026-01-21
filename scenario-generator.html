@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constitutional Scenario Generator - Powered by Gemini</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .checkbox-group:hover {
+            background: #f1f5f9;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .scenario-output {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .scenario-output.show {
+            display: block;
+        }
+
+        .scenario-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .scenario-section:last-child {
+            border-bottom: none;
+        }
+
+        .scenario-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .scenario-section p, .scenario-section pre {
+            line-height: 1.8;
+            color: #334155;
+        }
+
+        .scenario-section pre {
+            white-space: pre-wrap;
+            font-family: inherit;
+        }
+
+        .tag-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background: #ddd6fe;
+            color: #5b21b6;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            flex: 1;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 10px;
+            font-size: 0.95rem;
+        }
+
+        .action-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .examples {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .examples h4 {
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+
+        .examples ul {
+            margin-left: 20px;
+            line-height: 2;
+            color: #334155;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Constitutional Scenario Generator</h1>
+            <p class="subtitle">AI-Powered Simulation Scenario Creation with Gemini</p>
+        </header>
+
+        <div class="card">
+            <h2>Generate Simulation Scenario</h2>
+
+            <div class="examples">
+                <h4>💡 Example Prompts:</h4>
+                <ul>
+                    <li>"A society where AI makes judicial decisions"</li>
+                    <li>"Universal basic income in a climate crisis"</li>
+                    <li>"Direct democracy via blockchain voting"</li>
+                    <li>"Genetic engineering becomes affordable"</li>
+                    <li>"Mars colony needs a new constitution"</li>
+                </ul>
+            </div>
+
+            <div class="input-group">
+                <label for="scenarioType">Scenario Type:</label>
+                <select id="scenarioType">
+                    <option value="technological">Technological Change</option>
+                    <option value="social">Social Movement</option>
+                    <option value="economic">Economic Policy</option>
+                    <option value="environmental">Environmental Crisis</option>
+                    <option value="political">Political Reform</option>
+                    <option value="rights">Rights Expansion</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="scenarioPrompt">Describe Your Scenario:</label>
+                <textarea
+                    id="scenarioPrompt"
+                    placeholder="E.g., 'A country debates whether to give AI systems legal personhood and voting rights. What constitutional values are at stake?'"
+                ></textarea>
+            </div>
+
+            <div class="input-group">
+                <label for="timeHorizon">Time Horizon:</label>
+                <select id="timeHorizon">
+                    <option value="near">Near-term (5-10 years)</option>
+                    <option value="medium">Medium-term (10-30 years)</option>
+                    <option value="long">Long-term (30+ years)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Include in Scenario:</label>
+                <div class="grid">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="includeStakeholders" checked>
+                        <label for="includeStakeholders">Key Stakeholders</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="includeValues" checked>
+                        <label for="includeValues">Value Conflicts</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="includeParameters" checked>
+                        <label for="includeParameters">Simulation Parameters</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="includeMetrics" checked>
+                        <label for="includeMetrics">Success Metrics</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="includeRisks">
+                        <label for="includeRisks">Risk Factors</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="includeCode">
+                        <label for="includeCode">Sample Code</label>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="generateScenario()" id="generateBtn">
+                🎬 Generate Scenario with Gemini
+            </button>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Gemini is generating your scenario...</p>
+            </div>
+
+            <div class="scenario-output" id="output"></div>
+        </div>
+
+        <div class="card">
+            <h2>📚 How Scenario Generation Works</h2>
+
+            <div style="line-height: 1.8; color: #334155;">
+                <h3 style="color: #667eea; margin-top: 20px;">Three Approaches:</h3>
+
+                <h4 style="margin-top: 15px; color: #475569;">1. 🤖 LLM-Powered (What This Tool Does)</h4>
+                <p>Use AI to generate rich, detailed scenarios with:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Contextual background and setup</li>
+                    <li>Stakeholder analysis</li>
+                    <li>Value conflicts identification</li>
+                    <li>Simulation parameters</li>
+                    <li>Expected outcomes and metrics</li>
+                    <li>Sample implementation code</li>
+                </ul>
+
+                <h4 style="margin-top: 15px; color: #475569;">2. 💬 Conversational Design</h4>
+                <p>Have a dialogue with AI to refine scenarios:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Start with broad idea</li>
+                    <li>AI asks clarifying questions</li>
+                    <li>Iteratively refine details</li>
+                    <li>Build complexity gradually</li>
+                </ul>
+
+                <h4 style="margin-top: 15px; color: #475569;">3. 🛠️ Programmatic Templates</h4>
+                <p>Create scenario templates that can be parameterized:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Define scenario structure</li>
+                    <li>Fill in with variables</li>
+                    <li>Combine multiple templates</li>
+                    <li>Generate variations automatically</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function generateScenario() {
+            const prompt = document.getElementById('scenarioPrompt').value.trim();
+            const type = document.getElementById('scenarioType').value;
+            const timeHorizon = document.getElementById('timeHorizon').value;
+
+            const includeStakeholders = document.getElementById('includeStakeholders').checked;
+            const includeValues = document.getElementById('includeValues').checked;
+            const includeParameters = document.getElementById('includeParameters').checked;
+            const includeMetrics = document.getElementById('includeMetrics').checked;
+            const includeRisks = document.getElementById('includeRisks').checked;
+            const includeCode = document.getElementById('includeCode').checked;
+
+            if (!prompt) {
+                alert('Please describe your scenario');
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const output = document.getElementById('output');
+
+            btn.disabled = true;
+            loading.classList.add('show');
+            output.classList.remove('show');
+
+            // Build comprehensive prompt for Gemini
+            const aiPrompt = `You are an expert in constitutional AI and simulation scenario design. Generate a detailed simulation scenario based on the following:
+
+SCENARIO TYPE: ${type}
+TIME HORIZON: ${timeHorizon}
+USER DESCRIPTION: ${prompt}
+
+Please create a comprehensive scenario that includes:
+
+${includeStakeholders ? '1. KEY STAKEHOLDERS: Who are the main groups affected? What are their interests?' : ''}
+${includeValues ? '2. VALUE CONFLICTS: What constitutional values or principles are in tension?' : ''}
+${includeParameters ? '3. SIMULATION PARAMETERS: What variables should be modeled? What ranges?' : ''}
+${includeMetrics ? '4. SUCCESS METRICS: How do we measure outcomes? What indicates success or failure?' : ''}
+${includeRisks ? '5. RISK FACTORS: What could go wrong? What are the uncertainties?' : ''}
+${includeCode ? '6. SAMPLE CODE: Provide Python pseudocode for an agent-based model of this scenario' : ''}
+
+Format your response with clear sections and be specific about numbers, timelines, and mechanisms.`;
+
+            try {
+                // Call Gemini via the API directly
+                const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${getApiKey()}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: aiPrompt
+                            }]
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const scenarioText = data.candidates[0].content.parts[0].text;
+
+                // Display the scenario securely
+                displayScenario(scenarioText, prompt, type, timeHorizon);
+
+            } catch (error) {
+                console.error('Error:', error);
+                displayError(error.message);
+            } finally {
+                btn.disabled = false;
+                loading.classList.remove('show');
+            }
+        }
+
+        function displayScenario(scenarioText, originalPrompt, type, timeHorizon) {
+            const output = document.getElementById('output');
+
+            // Clear previous content
+            output.textContent = '';
+
+            // Create sections safely using DOM methods
+            const metaSection = document.createElement('div');
+            metaSection.className = 'scenario-section';
+
+            const metaTitle = document.createElement('h3');
+            metaTitle.textContent = '📝 Original Request';
+            metaSection.appendChild(metaTitle);
+
+            const typeP = document.createElement('p');
+            const typeStrong = document.createElement('strong');
+            typeStrong.textContent = 'Type: ';
+            typeP.appendChild(typeStrong);
+            typeP.appendChild(document.createTextNode(type));
+            metaSection.appendChild(typeP);
+
+            const horizonP = document.createElement('p');
+            const horizonStrong = document.createElement('strong');
+            horizonStrong.textContent = 'Time Horizon: ';
+            horizonP.appendChild(horizonStrong);
+            horizonP.appendChild(document.createTextNode(timeHorizon));
+            metaSection.appendChild(horizonP);
+
+            const promptP = document.createElement('p');
+            const promptStrong = document.createElement('strong');
+            promptStrong.textContent = 'Description: ';
+            promptP.appendChild(promptStrong);
+            promptP.appendChild(document.createTextNode(originalPrompt));
+            metaSection.appendChild(promptP);
+
+            output.appendChild(metaSection);
+
+            // Scenario text section
+            const scenarioSection = document.createElement('div');
+            scenarioSection.className = 'scenario-section';
+
+            const scenarioTitle = document.createElement('h3');
+            scenarioTitle.textContent = '🎬 Generated Scenario';
+            scenarioSection.appendChild(scenarioTitle);
+
+            const scenarioPre = document.createElement('pre');
+            scenarioPre.textContent = scenarioText;
+            scenarioSection.appendChild(scenarioPre);
+
+            output.appendChild(scenarioSection);
+
+            // Next steps section
+            const stepsSection = document.createElement('div');
+            stepsSection.className = 'scenario-section';
+
+            const stepsTitle = document.createElement('h3');
+            stepsTitle.textContent = '🚀 Next Steps';
+            stepsSection.appendChild(stepsTitle);
+
+            const stepsP = document.createElement('p');
+            stepsP.textContent = 'Now you can:';
+            stepsSection.appendChild(stepsP);
+
+            const stepsList = document.createElement('ul');
+            stepsList.style.marginLeft = '20px';
+            stepsList.style.marginTop = '10px';
+            stepsList.style.lineHeight = '2';
+
+            const steps = [
+                'Implement this scenario in an agent-based model',
+                'Run Monte Carlo simulations with the parameters',
+                'Test different policy variations',
+                'Share with stakeholders for feedback',
+                'Refine and iterate on the scenario'
+            ];
+
+            steps.forEach(step => {
+                const li = document.createElement('li');
+                li.textContent = step;
+                stepsList.appendChild(li);
+            });
+
+            stepsSection.appendChild(stepsList);
+            output.appendChild(stepsSection);
+
+            // Action buttons
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.className = 'action-buttons';
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'action-btn';
+            copyBtn.textContent = '📋 Copy to Clipboard';
+            copyBtn.onclick = copyScenario;
+            buttonsDiv.appendChild(copyBtn);
+
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'action-btn';
+            downloadBtn.textContent = '💾 Download as Text';
+            downloadBtn.onclick = downloadScenario;
+            buttonsDiv.appendChild(downloadBtn);
+
+            const refineBtn = document.createElement('button');
+            refineBtn.className = 'action-btn';
+            refineBtn.textContent = '✨ Refine Scenario';
+            refineBtn.onclick = refineScenario;
+            buttonsDiv.appendChild(refineBtn);
+
+            const newBtn = document.createElement('button');
+            newBtn.className = 'action-btn';
+            newBtn.textContent = '🔄 Generate Another';
+            newBtn.onclick = generateNew;
+            buttonsDiv.appendChild(newBtn);
+
+            output.appendChild(buttonsDiv);
+
+            output.classList.add('show');
+
+            // Store scenario for copy/download
+            window.currentScenario = {
+                text: scenarioText,
+                meta: { originalPrompt, type, timeHorizon }
+            };
+        }
+
+        function displayError(message) {
+            const output = document.getElementById('output');
+            output.textContent = '';
+
+            const errorDiv = document.createElement('div');
+            errorDiv.style.background = '#fee2e2';
+            errorDiv.style.padding = '20px';
+            errorDiv.style.borderRadius = '8px';
+            errorDiv.style.borderLeft = '4px solid #ef4444';
+
+            const errorTitle = document.createElement('h3');
+            errorTitle.style.color = '#991b1b';
+            errorTitle.style.marginBottom = '10px';
+            errorTitle.textContent = 'Error Generating Scenario';
+            errorDiv.appendChild(errorTitle);
+
+            const errorP = document.createElement('p');
+            errorP.style.color = '#7f1d1d';
+            errorP.textContent = message;
+            errorDiv.appendChild(errorP);
+
+            const retryP = document.createElement('p');
+            retryP.style.color = '#7f1d1d';
+            retryP.style.marginTop = '10px';
+            retryP.textContent = 'Please try again or check your internet connection.';
+            errorDiv.appendChild(retryP);
+
+            output.appendChild(errorDiv);
+            output.classList.add('show');
+        }
+
+        function copyScenario() {
+            if (window.currentScenario) {
+                const fullText = `SIMULATION SCENARIO
+Generated: ${new Date().toLocaleString()}
+
+Type: ${window.currentScenario.meta.type}
+Time Horizon: ${window.currentScenario.meta.timeHorizon}
+Original Prompt: ${window.currentScenario.meta.originalPrompt}
+
+---
+
+${window.currentScenario.text}`;
+
+                navigator.clipboard.writeText(fullText).then(() => {
+                    alert('✅ Scenario copied to clipboard!');
+                }).catch(err => {
+                    alert('❌ Failed to copy: ' + err);
+                });
+            }
+        }
+
+        function downloadScenario() {
+            if (window.currentScenario) {
+                const fullText = `SIMULATION SCENARIO
+Generated: ${new Date().toLocaleString()}
+
+Type: ${window.currentScenario.meta.type}
+Time Horizon: ${window.currentScenario.meta.timeHorizon}
+Original Prompt: ${window.currentScenario.meta.originalPrompt}
+
+---
+
+${window.currentScenario.text}`;
+
+                const blob = new Blob([fullText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `scenario-${Date.now()}.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        function refineScenario() {
+            const refinement = prompt('What would you like to refine or add to this scenario?');
+            if (refinement) {
+                const currentPrompt = document.getElementById('scenarioPrompt').value;
+                document.getElementById('scenarioPrompt').value = currentPrompt + '\n\nREFINEMENT: ' + refinement;
+                generateScenario();
+            }
+        }
+
+        function generateNew() {
+            document.getElementById('scenarioPrompt').value = '';
+            document.getElementById('output').classList.remove('show');
+        }
+    </script>
+</body>
+</html>
