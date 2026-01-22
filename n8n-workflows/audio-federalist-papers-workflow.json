@@ -1,0 +1,139 @@
+{
+  "name": "Audio Federalist Papers Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "federalist-audio",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-federalist",
+      "name": "Webhook - Federalist Audio",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "author",
+              "name": "author",
+              "value": "={{ $json.body.author || 'Hamilton' }}",
+              "type": "string"
+            },
+            {
+              "id": "topic",
+              "name": "topic",
+              "value": "={{ $json.body.topic }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "parse-request",
+      "name": "Parse Request",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyAWWsNIdJBNIYeKEXFfsKGa5OKs7l7os40",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"You are \" + $json.author + \" writing as PUBLIUS in 1787-1788.\\n\\nCRITICAL STYLE REQUIREMENTS:\\n1. Use 18th-century formal English prose\\n2. Write in \" + $json.author + \"'s distinctive voice\\n3. Reference: Greek/Roman history, Enlightenment philosophy\\n4. Begin with: To the People of the State of New York:\\n\\nTopic: \" + $json.topic + \" applied to modern artificial intelligence\\n\\nSTRUCTURE:\\n1. Opening address and thesis\\n2. Historical/philosophical foundation\\n3. Main argument with examples\\n4. Address objections\\n5. Conclude with call to reason and patriotism\\n\\nWRITE an 800-1000 word essay suitable for dramatic narration. Use period-appropriate language and rhetorical devices.\\n\\nPUBLIUS\"\n    }]\n  }]\n} }}",
+        "options": {}
+      },
+      "id": "generate-essay",
+      "name": "Generate Federalist Essay",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const essay = items[0].json.candidates[0].content.parts[0].text;\nconst author = items[0].json.author;\n\n// Add dramatic pauses and emphasis for narration\nconst narratedEssay = essay\n  .replace(/\\. /g, '... ')  // Longer pauses at sentences\n  .replace(/: /g, ':... ')   // Dramatic pause after colons\n  .replace(/—/g, '...')      // Replace em-dashes with pauses\n  .replace(/!/g, '!... ');   // Emphasis after exclamations\n\nreturn [{\n  json: {\n    author,\n    essay: narratedEssay,\n    originalEssay: essay\n  }\n}];"
+      },
+      "id": "format-for-narration",
+      "name": "Format for Narration",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "resource": "speech",
+        "operation": "textToSpeech",
+        "voice": {
+          "mode": "list",
+          "value": "={{ $json.author === 'Hamilton' ? 'Adam' : ($json.author === 'Madison' ? 'Arnold' : 'Josh') }}"
+        },
+        "text": "={{ $json.essay }}",
+        "model_id": "eleven_multilingual_v2",
+        "voice_settings": {
+          "stability": 0.80,
+          "similarity_boost": 0.70,
+          "style": 0.60,
+          "use_speaker_boost": true
+        },
+        "options": {
+          "optimize_streaming_latency": 2
+        }
+      },
+      "id": "text-to-speech-federalist",
+      "name": "Generate Historical Narration",
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenlabs",
+      "typeVersion": 1,
+      "position": [1120, 300],
+      "credentials": {
+        "elevenLabsApi": {
+          "id": "1",
+          "name": "ElevenLabs API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"author\": $('Parse Request').item.json.author,\n  \"topic\": $('Parse Request').item.json.topic,\n  \"essayText\": $('Format for Narration').item.json.originalEssay,\n  \"audioBase64\": $binary.data.toString('base64'),\n  \"audioUrl\": \"data:audio/mpeg;base64,\" + $binary.data.toString('base64'),\n  \"duration\": \"Approximately \" + Math.ceil($('Format for Narration').item.json.essay.length / 150) + \" minutes\",\n  \"narrator\": $json.author === 'Hamilton' ? 'Adam (Deep, authoritative)' : ($json.author === 'Madison' ? 'Arnold (Refined, analytical)' : 'Josh (Diplomatic, measured)')\n} }}",
+        "options": {}
+      },
+      "id": "respond-with-audiobook",
+      "name": "Respond with Audiobook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - Federalist Audio": {
+      "main": [[{ "node": "Parse Request", "type": "main", "index": 0 }]]
+    },
+    "Parse Request": {
+      "main": [[{ "node": "Generate Federalist Essay", "type": "main", "index": 0 }]]
+    },
+    "Generate Federalist Essay": {
+      "main": [[{ "node": "Format for Narration", "type": "main", "index": 0 }]]
+    },
+    "Format for Narration": {
+      "main": [[{ "node": "Generate Historical Narration", "type": "main", "index": 0 }]]
+    },
+    "Generate Historical Narration": {
+      "main": [[{ "node": "Respond with Audiobook", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-01-22T00:00:00.000Z",
+  "versionId": "1"
+}

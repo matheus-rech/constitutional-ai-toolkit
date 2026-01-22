@@ -1,0 +1,189 @@
+{
+  "name": "Voice-Enabled Constitutional AI Q&A",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "voice-qa",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-voice-qa",
+      "name": "Webhook - Voice Q&A",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-audio",
+              "leftValue": "={{ $json.body.hasAudio }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-input-type",
+      "name": "Check Input Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "resource": "speech",
+        "operation": "speechToText",
+        "audioFile": "={{ $json.body.audioData }}",
+        "options": {
+          "language": "en"
+        }
+      },
+      "id": "speech-to-text",
+      "name": "ElevenLabs Speech-to-Text",
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenlabs",
+      "typeVersion": 1,
+      "position": [680, 200],
+      "credentials": {
+        "elevenLabsApi": {
+          "id": "1",
+          "name": "ElevenLabs API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "question-text",
+              "name": "questionText",
+              "value": "={{ $json.body.text || $json.transcription }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "merge-text",
+      "name": "Merge Text Sources",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyAWWsNIdJBNIYeKEXFfsKGa5OKs7l7os40",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"You are an expert in Constitutional AI and governance. Analyze this question and provide a clear, educational response focusing on constitutional principles and ethical considerations.\\n\\nQuestion: \" + $json.questionText + \"\\n\\nProvide a structured response with:\\n1. Core constitutional values involved\\n2. Potential conflicts\\n3. Key considerations\\n4. Suggested framework for resolution\\n\\nKeep the response conversational and suitable for voice narration (about 200-300 words).\"\n    }]\n  }]\n} }}",
+        "options": {}
+      },
+      "id": "gemini-analysis",
+      "name": "Gemini AI Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = items[0].json.candidates[0].content.parts[0].text;\nreturn [{ json: { responseText: response } }];"
+      },
+      "id": "extract-response",
+      "name": "Extract Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "resource": "speech",
+        "operation": "textToSpeech",
+        "voice": { "mode": "list", "value": "Rachel" },
+        "text": "={{ $json.responseText }}",
+        "model_id": "eleven_multilingual_v2",
+        "voice_settings": {
+          "stability": 0.75,
+          "similarity_boost": 0.75,
+          "style": 0.5,
+          "use_speaker_boost": true
+        },
+        "options": {
+          "optimize_streaming_latency": 3
+        }
+      },
+      "id": "text-to-speech",
+      "name": "ElevenLabs Text-to-Speech",
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenlabs",
+      "typeVersion": 1,
+      "position": [1560, 300],
+      "credentials": {
+        "elevenLabsApi": {
+          "id": "1",
+          "name": "ElevenLabs API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"question\": $('Merge Text Sources').item.json.questionText,\n  \"responseText\": $json.responseText,\n  \"audioUrl\": \"data:audio/mpeg;base64,\" + $binary.data.toString('base64'),\n  \"inputType\": $('Webhook - Voice Q&A').item.json.body.hasAudio ? \"voice\" : \"text\"\n} }}",
+        "options": {}
+      },
+      "id": "respond-with-audio",
+      "name": "Respond with Audio",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1780, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - Voice Q&A": {
+      "main": [[{ "node": "Check Input Type", "type": "main", "index": 0 }]]
+    },
+    "Check Input Type": {
+      "main": [
+        [{ "node": "ElevenLabs Speech-to-Text", "type": "main", "index": 0 }],
+        [{ "node": "Merge Text Sources", "type": "main", "index": 0 }]
+      ]
+    },
+    "ElevenLabs Speech-to-Text": {
+      "main": [[{ "node": "Merge Text Sources", "type": "main", "index": 0 }]]
+    },
+    "Merge Text Sources": {
+      "main": [[{ "node": "Gemini AI Analysis", "type": "main", "index": 0 }]]
+    },
+    "Gemini AI Analysis": {
+      "main": [[{ "node": "Extract Response", "type": "main", "index": 0 }]]
+    },
+    "Extract Response": {
+      "main": [[{ "node": "ElevenLabs Text-to-Speech", "type": "main", "index": 0 }]]
+    },
+    "ElevenLabs Text-to-Speech": {
+      "main": [[{ "node": "Respond with Audio", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-01-22T00:00:00.000Z",
+  "versionId": "1"
+}

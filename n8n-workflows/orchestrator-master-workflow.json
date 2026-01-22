@@ -1,0 +1,339 @@
+{
+  "name": "Constitutional AI Toolkit - Master Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "orchestrator",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-orchestrator",
+      "name": "Webhook - Orchestrator",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 400]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "tool-name",
+              "name": "toolName",
+              "value": "={{ $json.body.tool_name || $json.body.toolName }}",
+              "type": "string"
+            },
+            {
+              "id": "parameters",
+              "name": "parameters",
+              "value": "={{ $json.body.parameters }}",
+              "type": "object"
+            },
+            {
+              "id": "conversation-id",
+              "name": "conversationId",
+              "value": "={{ $json.body.conversation_id || 'unknown' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "parse-request",
+      "name": "Parse Request",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [460, 400]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "rules": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.toolName }}",
+                    "rightValue": "constitution_explorer",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "constitution_explorer"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.toolName }}",
+                    "rightValue": "federalist_papers_generator",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "federalist_papers"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.toolName }}",
+                    "rightValue": "scenario_generator",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "scenario_generator"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.toolName }}",
+                    "rightValue": "war_games_simulator",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "war_games"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.toolName }}",
+                    "rightValue": "simulation_explorer",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "simulation_explorer"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.toolName }}",
+                    "rightValue": "api_key_manager",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "api_key_manager"
+            }
+          ]
+        },
+        "options": {},
+        "fallbackOutput": "extra"
+      },
+      "id": "route-to-tool",
+      "name": "Route to Tool",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyAWWsNIdJBNIYeKEXFfsKGa5OKs7l7os40",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"You are an expert in Constitutional AI and governance. Analyze this question and provide a clear, educational response focusing on constitutional principles and ethical considerations.\\n\\nQuestion: \" + $json.parameters.question + \"\\n\\nProvide a structured response with:\\n1. Core constitutional values involved\\n2. Potential conflicts\\n3. Key considerations\\n4. Suggested framework for resolution\\n\\nKeep the response conversational and suitable for voice narration (about 200-300 words).\"\n    }]\n  }]\n} }}",
+        "options": {}
+      },
+      "id": "constitution-explorer-gemini",
+      "name": "Constitution Explorer - Gemini",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyAWWsNIdJBNIYeKEXFfsKGa5OKs7l7os40",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"You are \" + ($json.parameters.author || 'Hamilton') + \" writing as PUBLIUS in 1787-1788.\\n\\nCRITICAL STYLE REQUIREMENTS:\\n1. Use 18th-century formal English prose\\n2. Write in \" + ($json.parameters.author || 'Hamilton') + \"'s distinctive voice\\n3. Reference: Greek/Roman history, Enlightenment philosophy\\n4. Begin with: To the People of the State of New York:\\n\\nTopic: \" + ($json.parameters.topic || 'artificial intelligence governance') + \"\\n\\nSTRUCTURE:\\n1. Opening address and thesis\\n2. Historical/philosophical foundation\\n3. Main argument with examples\\n4. Address objections\\n5. Conclude with call to reason and patriotism\\n\\nWRITE an 800-1000 word essay suitable for dramatic narration. Use period-appropriate language and rhetorical devices.\\n\\nPUBLIUS\"\n    }]\n  }]\n} }}",
+        "options": {}
+      },
+      "id": "federalist-papers-gemini",
+      "name": "Federalist Papers - Gemini",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyAWWsNIdJBNIYeKEXFfsKGa5OKs7l7os40",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"You are a Constitutional AI scenario designer. Create a compelling, thought-provoking scenario that explores constitutional principles.\\n\\nTopic: \" + ($json.parameters.topic || 'AI governance') + \"\\nComplexity: \" + ($json.parameters.complexity || 'intermediate') + \"\\n\\nCreate a scenario with:\\n1. SITUATION: A realistic context that poses a constitutional dilemma\\n2. STAKEHOLDERS: At least 3 different perspectives (citizen, government, tech company)\\n3. CONSTITUTIONAL QUESTIONS: Key principles at stake\\n4. DECISION POINTS: Clear choices the user must consider\\n5. CONSEQUENCES: Potential outcomes of different decisions\\n\\nKeep it engaging, conversational, and suitable for voice narration (500-700 words).\"\n    }]\n  }]\n} }}",
+        "options": {}
+      },
+      "id": "scenario-generator-gemini",
+      "name": "Scenario Generator - Gemini",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 440]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyAWWsNIdJBNIYeKEXFfsKGa5OKs7l7os40",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"You are a Constitutional AI debate moderator. Create a structured debate between historical figures on a modern AI topic.\\n\\nTopic: \" + ($json.parameters.topic || 'artificial intelligence regulation') + \"\\nParticipants: \" + JSON.stringify($json.parameters.participants || ['Hamilton', 'Madison', 'Jefferson']) + \"\\n\\nCreate a debate with:\\n1. MODERATOR INTRODUCTION: Set the stage\\n2. OPENING STATEMENTS: Each participant (150 words each)\\n3. REBUTTALS: Direct responses to each other (100 words each)\\n4. CLOSING ARGUMENTS: Final positions (100 words each)\\n\\nMake it dramatic, intellectual, and suitable for multi-voice narration. Each speaker should have distinct rhetorical style:\\n- Hamilton: Bold, energetic, pro-strong-governance\\n- Madison: Analytical, cautious, balance-focused\\n- Jefferson: Idealistic, liberty-focused, decentralization\\n\\nFormat each section clearly with speaker labels.\"\n    }]\n  }]\n} }}",
+        "options": {}
+      },
+      "id": "war-games-gemini",
+      "name": "War Games - Gemini",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 560]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract response from Gemini\nconst responseText = items[0].json.candidates[0].content.parts[0].text;\nconst toolName = 'constitution_explorer';\n\nreturn [{\n  json: {\n    success: true,\n    tool: toolName,\n    result: {\n      responseText: responseText,\n      citations: [] // Could extract citations from response\n    }\n  }\n}];"
+      },
+      "id": "format-constitution-response",
+      "name": "Format Constitution Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract essay from Gemini\nconst essay = items[0].json.candidates[0].content.parts[0].text;\nconst author = items[0].json.parameters?.author || 'Hamilton';\n\n// Add dramatic pauses for narration\nconst narratedEssay = essay\n  .replace(/\\. /g, '... ')  // Longer pauses at sentences\n  .replace(/: /g, ':... ')   // Dramatic pause after colons\n  .replace(/—/g, '...')      // Replace em-dashes with pauses\n  .replace(/!/g, '!... ');   // Emphasis after exclamations\n\nreturn [{\n  json: {\n    success: true,\n    tool: 'federalist_papers_generator',\n    result: {\n      responseText: essay,\n      narratedText: narratedEssay,\n      author: author,\n      narrator: author === 'Hamilton' ? 'Adam (Deep, authoritative)' : (author === 'Madison' ? 'Arnold (Refined, analytical)' : 'Josh (Diplomatic, measured)')\n    }\n  }\n}];"
+      },
+      "id": "format-federalist-response",
+      "name": "Format Federalist Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 320]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract scenario from Gemini\nconst scenario = items[0].json.candidates[0].content.parts[0].text;\nconst topic = items[0].json.parameters?.topic || 'Unknown';\n\nreturn [{\n  json: {\n    success: true,\n    tool: 'scenario_generator',\n    result: {\n      responseText: scenario,\n      topic: topic\n    }\n  }\n}];"
+      },
+      "id": "format-scenario-response",
+      "name": "Format Scenario Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 440]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract debate from Gemini\nconst debate = items[0].json.candidates[0].content.parts[0].text;\nconst participants = items[0].json.parameters?.participants || ['Hamilton', 'Madison'];\n\n// Split debate into sections for multi-voice narration\n// This is a simple split - could be more sophisticated\nconst sections = debate.split('\\n\\n');\n\nreturn [{\n  json: {\n    success: true,\n    tool: 'war_games_simulator',\n    result: {\n      responseText: debate,\n      participants: participants,\n      sections: sections\n    }\n  }\n}];"
+      },
+      "id": "format-war-games-response",
+      "name": "Format War Games Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 560]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Handle unknown tool\nconst toolName = items[0].json.toolName || 'unknown';\n\nreturn [{\n  json: {\n    success: false,\n    error: `Unknown tool: ${toolName}`,\n    availableTools: [\n      'constitution_explorer',\n      'federalist_papers_generator',\n      'scenario_generator',\n      'war_games_simulator',\n      'simulation_explorer',\n      'api_key_manager'\n    ]\n  }\n}];"
+      },
+      "id": "handle-unknown-tool",
+      "name": "Handle Unknown Tool",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 680]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "respond-to-agent",
+      "name": "Respond to Agent",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1340, 400]
+    }
+  ],
+  "connections": {
+    "Webhook - Orchestrator": {
+      "main": [[{ "node": "Parse Request", "type": "main", "index": 0 }]]
+    },
+    "Parse Request": {
+      "main": [[{ "node": "Route to Tool", "type": "main", "index": 0 }]]
+    },
+    "Route to Tool": {
+      "main": [
+        [{ "node": "Constitution Explorer - Gemini", "type": "main", "index": 0 }],
+        [{ "node": "Federalist Papers - Gemini", "type": "main", "index": 0 }],
+        [{ "node": "Scenario Generator - Gemini", "type": "main", "index": 0 }],
+        [{ "node": "War Games - Gemini", "type": "main", "index": 0 }],
+        [],
+        [],
+        [{ "node": "Handle Unknown Tool", "type": "main", "index": 0 }]
+      ]
+    },
+    "Constitution Explorer - Gemini": {
+      "main": [[{ "node": "Format Constitution Response", "type": "main", "index": 0 }]]
+    },
+    "Federalist Papers - Gemini": {
+      "main": [[{ "node": "Format Federalist Response", "type": "main", "index": 0 }]]
+    },
+    "Scenario Generator - Gemini": {
+      "main": [[{ "node": "Format Scenario Response", "type": "main", "index": 0 }]]
+    },
+    "War Games - Gemini": {
+      "main": [[{ "node": "Format War Games Response", "type": "main", "index": 0 }]]
+    },
+    "Format Constitution Response": {
+      "main": [[{ "node": "Respond to Agent", "type": "main", "index": 0 }]]
+    },
+    "Format Federalist Response": {
+      "main": [[{ "node": "Respond to Agent", "type": "main", "index": 0 }]]
+    },
+    "Format Scenario Response": {
+      "main": [[{ "node": "Respond to Agent", "type": "main", "index": 0 }]]
+    },
+    "Format War Games Response": {
+      "main": [[{ "node": "Respond to Agent", "type": "main", "index": 0 }]]
+    },
+    "Handle Unknown Tool": {
+      "main": [[{ "node": "Respond to Agent", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-01-22T00:00:00.000Z",
+  "versionId": "1"
+}
